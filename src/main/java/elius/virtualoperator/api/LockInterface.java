@@ -53,7 +53,6 @@ public class LockInterface {
 	
 	
 	@GET
-	@Path("get")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response get() {
 		

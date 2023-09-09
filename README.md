@@ -98,23 +98,23 @@ API
 
 * Add a DEBUG task
   
-  *curl -X POST -d '{"status": 1, "type": 1, "priority": 1, "details": "nothing", "requester": "generic", "owner": "foo"}' http://localhost:8080/EliusVirtualOperator/api/evo/task/add  --header "Content-Type:application/json"*
+  *curl -X PUT -d '{"status": 1, "type": 1, "priority": 1, "details": "nothing", "requester": "generic", "owner": "foo"}' http://localhost:8080/EliusVirtualOperator/api/evo/task  --header "Content-Type:application/json"*
   
 * Add a SHELL task
 
-  *curl -X POST -d '{"status": 1, "type": 2, "priority": 1, "details": "test.sh", "requester": "generic", "owner": "foo"}' http://localhost:8080/EliusVirtualOperator/api/evo/task/add  --header "Content-Type:application/json"*
+  *curl -X PUT -d '{"status": 1, "type": 2, "priority": 1, "details": "test.sh", "requester": "generic", "owner": "foo"}' http://localhost:8080/EliusVirtualOperator/api/evo/task  --header "Content-Type:application/json"*
   
   *test.sh* must be present in the directory specified in the *evo-shell.txt* property file under label *task.shell.scripts.path*
 
 * Get all tasks
 
-  *curl http://localhost:8080/EliusVirtualOperator/api/evo/task/get*
+  *curl http://localhost:8080/EliusVirtualOperator/api/evo/task*
   
 **Management**
   
 * Get all locks
   
-  *http://localhost:8080/EliusVirtualOperator/api/evo/lock/get*
+  *curl http://localhost:8080/EliusVirtualOperator/api/evo/lock*
 
 
 **Authentications**
