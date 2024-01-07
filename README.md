@@ -148,7 +148,7 @@ To create your own task please follow this steps:
    
  * Modify *run* method inside *TaskExecutor* class
  
-   *case SHELL:*
+   *case GAME:*
 
    *dbTask.updateStatus(task.getUuid(), TaskStatus.RUNNING);*
 
