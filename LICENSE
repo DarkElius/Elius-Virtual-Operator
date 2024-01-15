@@ -213,4 +213,7 @@
    This product bundles Apache Derby version 10.16.1.1, which is available under a "Apache 2.0" license.
    For details, see https://github.com/apache/derby/blob/trunk/LICENSE
 
+   This product bundles Jackson version 2.16.1, which is available under a "Apache 2.0" license.
+   For details, see https://github.com/FasterXML/jackson
+
 

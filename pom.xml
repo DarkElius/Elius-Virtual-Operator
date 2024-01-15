@@ -34,6 +34,7 @@
 		<ewaf.version>0.0.1-SNAPSHOT</ewaf.version>
 		<log4j.version>2.18.0</log4j.version>
 		<derby.version>10.16.1.1</derby.version>
+		<jackson.version>2.16.1</jackson.version>
 		<jakarta.version>6.0.0</jakarta.version>
 	</properties>
 
@@ -46,6 +47,7 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
+
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -57,6 +59,7 @@
 			<artifactId>log4j-core</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
+		
 
 		<!-- Apache Derby DB -->
 		<dependency>
@@ -65,6 +68,15 @@
 			<version>${derby.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		
+
+		<!-- Json to java object -->
+		<dependency>
+		    <groupId>com.fasterxml.jackson.dataformat</groupId>
+		    <artifactId>jackson-dataformat-xml</artifactId>
+		    <version>${jackson.version}</version>
+		</dependency>
+	
 
 		<!-- Jakarta Servlet Http, only for compilation -->		
 		<dependency>

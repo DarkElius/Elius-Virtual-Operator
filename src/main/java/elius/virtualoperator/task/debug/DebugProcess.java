@@ -39,9 +39,6 @@ public class DebugProcess implements TaskProcess {
 	@Override
 	public void execute(Task task) {
 		
-		// Log process start
-		logger.info("Start processing task(" + task.getUuid() + ") details(" + task.getDetails() + ")");
-		
 		// Random number generator
 		Random rand = new Random();
 		

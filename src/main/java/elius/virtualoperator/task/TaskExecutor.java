@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import elius.virtualoperator.VirtualOperatorID;
 import elius.virtualoperator.task.debug.DebugProcess;
 import elius.virtualoperator.task.shell.ShellProcess;
+import elius.virtualoperator.task.job.JobProcessScript;
 
 public class TaskExecutor implements Runnable {
 
@@ -74,6 +75,11 @@ public class TaskExecutor implements Runnable {
 				// Update message
 				dbTask.updateResult(task.getUuid(), debugProcess.getTaskStatusResult(), debugProcess.getProcessResult());
 				
+				// Update task info for log
+				task.setStatus(debugProcess.getTaskStatusResult());
+				task.setResult(debugProcess.getProcessResult());
+
+
 				break;
 
 			case SHELL:
@@ -89,7 +95,30 @@ public class TaskExecutor implements Runnable {
 				// Update message
 				dbTask.updateResult(task.getUuid(), shellProcess.getTaskStatusResult(), shellProcess.getProcessResult());
 						
+				// Update task info for log
+				task.setStatus(shellProcess.getTaskStatusResult());
+				task.setResult(shellProcess.getProcessResult());
+
 				break;	
+				
+			case JOB_SCRIPT:
+				// Update task status
+				dbTask.updateStatus(task.getUuid(), TaskStatus.RUNNING);
+
+				// Create shell instance
+				JobProcessScript jobProcess = new JobProcessScript();
+
+				// Execute task
+				jobProcess.execute(task);
+				
+				// Update message
+				dbTask.updateResult(task.getUuid(), jobProcess.getTaskStatusResult(), jobProcess.getProcessResult());
+				
+				// Update task info for log
+				task.setStatus(jobProcess.getTaskStatusResult());
+				task.setResult(jobProcess.getProcessResult());
+						
+				break;					
 			
 			default:
 				// Log error message for missing process
@@ -100,7 +129,7 @@ public class TaskExecutor implements Runnable {
 		}
 
 		// Log end task
-		logger.debug("End - Task Id(" + task.getUuid() + ") Status(" + task.getStatus().getName() + ") Type(" + task.getType().getName() + ") Priority(" + task.getPriority().getName() + ") Details(" + task.getDetails() + ")");
+		logger.debug("End - Task Id(" + task.getUuid() + ") Status(" + task.getStatus().getName() + ") Result(" + task.getResult() + ") Type(" + task.getType().getName() + ") Priority(" + task.getPriority().getName() + ") Details(" + task.getDetails() + ")");
 
 	}
 

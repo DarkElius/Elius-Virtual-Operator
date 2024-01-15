@@ -23,7 +23,8 @@ public enum TaskType {
 
 	UNKNOWN(0, "Unknown"), 
 	DEBUG(1, "Debug"), 
-	SHELL(2, "Shell");
+	SHELL(2, "Shell"),
+	JOB_SCRIPT(3, "Job Script");
 
 	// Type name
 	private final String name;
