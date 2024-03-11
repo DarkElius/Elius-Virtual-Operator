@@ -19,12 +19,18 @@
 
 package elius.virtualoperator.task.job.flow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import elius.virtualoperator.task.job.Job;
 import elius.virtualoperator.task.job.JobStep;
 import elius.virtualoperator.task.job.log.JobLogScript;
+import elius.virtualoperator.task.job.search.JobSearch;
+import elius.virtualoperator.task.job.search.JobSearchRepository;
+import elius.virtualoperator.task.job.search.JobSearchRepositoryAttributes;
 
 public class JobFlowScript extends JobFlow {
 	
@@ -34,25 +40,31 @@ public class JobFlowScript extends JobFlow {
 	// Job Step
 	private JobStep jobStep;
 	
+	// Job Search match list
+	private JobSearch jobSearch;
+	
 
 	/**
 	 * Constructor
 	 * @param job Job
 	 */
 	public JobFlowScript(Job job) {
+		
 		super(job);	
 		
 		// Initialize job step
 		jobStep = null;
+		
+		// Initialize job search
+		jobSearch = new JobSearch();
+		
 	}
 	
 
-	@Override
-	protected void checkConditions() {
 
-		// Log
-		logger.trace("Check conditions");
-	}
+	@Override
+	protected void checkConditions() {};
+	
 
 	
 	@Override
@@ -81,38 +93,96 @@ public class JobFlowScript extends JobFlow {
 			flowResultMessage = "Unable to fetch log";
 		}
 		
+		// Log
+		logger.debug("Log fetched");
 	}
 	
 
 	@Override
-	protected void checkInstructions() {
-		// Log
-		logger.trace("Check instructions");
-		
-		// Instruction can usually be stored in the output or in the scheduler in case of jobs
-
-	}
+	protected void checkInstructions() {};
 
 	
 	@Override
 	protected void searchMessages() {
+		
 		// Log
 		logger.trace("Search messages");
+		
+		// Create repository
+		JobSearchRepository jsRepo = new JobSearchRepository();
+		
+		// Load from repository the search entries for scripts
+		if(0 == jsRepo.load(JobSearchRepositoryAttributes.SEARCH_ENTRIES_JOB_SCRIPT)) {
+			
+			// Search for a match
+			jobSearch.search(jobStep, jsRepo);
+
+			
+		} else {
+			
+			// Set flow code
+			flowResultCode = JobFlowResult.ERROR;
+			
+			// Set flow message
+			flowResultMessage = "Unable to load search entries from repository";
+			
+			// Stop the flow
+			goNextStep = false;
+			
+		}
 
 	}
 
 	
 	@Override
 	protected void evaluate() {
-		logger.trace("evaluate");
+
+		// Log
+		logger.trace("Evaluate");
+		
+		// At least one message found
+		if(jobSearch.getNMatches().size() > 0) {
+			
+			// Inform that some messages were found in the log
+			flowResultCode = JobFlowResult.WARNING;
+			
+			
+			
+			ObjectMapper objectMapper = new ObjectMapper();
+
+
+			try {
+				
+				// Set result message in JSON format
+				flowResultMessage = objectMapper.writeValueAsString(jobSearch);
+				
+			} catch (JsonProcessingException e) {
+				
+				// Set flow code
+				flowResultCode = JobFlowResult.ERROR;
+				
+				// Set flow message
+				flowResultMessage = "Unable to write Result Message in JSON format";
+				
+				// Stop the flow
+				goNextStep = false;
+				
+			}
+		
+		} else {
+
+			// Inform that some messages were found in the log
+			flowResultCode = JobFlowResult.OK;
+			
+		}
+		
+
+	
 		
 	}
 
 	
 	@Override
-	protected void doActions() {
-		logger.info("doActions");
-		
-	}
+	protected void doActions() {};
 
 }

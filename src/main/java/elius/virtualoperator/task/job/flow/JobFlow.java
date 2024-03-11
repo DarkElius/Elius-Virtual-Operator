@@ -32,6 +32,9 @@ public abstract class JobFlow {
 	// Flow result message
 	protected String flowResultMessage;
 	
+	// Go to the next step of the flow
+	protected boolean goNextStep;
+	
 	
 	/**
 	 * Constructor
@@ -46,6 +49,9 @@ public abstract class JobFlow {
 		
 		// Flow result message
 		flowResultMessage = "";
+		
+		// Enable flow next-step
+		goNextStep = true;
 	}
 	
 	
@@ -55,41 +61,34 @@ public abstract class JobFlow {
 	 */
 	public void run() {
 		
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
+		// Go to the next flow step
+		if(goNextStep) {
 			// Check conditions
 			checkConditions();			
 		}
 		
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
-			// Fetch log
+		// Fetch log
+		if(goNextStep) 
 			fetchLog();
-		}
 			
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
-			// Check instructions
+		// Check instructions
+		if(goNextStep) 
 			checkInstructions();
-		}
+
 		
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
-			// Search messages
+		// Search messages
+		if(goNextStep)
 			searchMessages();
-		}
+
 		
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
-			// Job evaluation
+		// Job evaluation
+		if(goNextStep)
 			evaluate();
-		}
+
 		
-		// Next step if result code is not yet defined
-		if(JobFlowResult.UNKNOWN == flowResultCode) {
-			// Execute actions
+		// Execute actions
+		if(goNextStep)
 			doActions();
-		}
 		
 	}
 
@@ -112,27 +111,41 @@ public abstract class JobFlow {
 	}
 	
 	
-	// Check conditions
+	/**
+	 * Check conditions
+	 */
 	protected abstract void checkConditions();
 	
 	
-	// Fetch log
+	/**
+	 * Fetch log
+	 * Extract log info for selected job
+	 */
 	protected abstract void fetchLog();
 	
 	
-	// Check instructions
+	/**
+	 * Check instructions
+	 * Instruction can usually be stored in the output or in the scheduler in case of jobs
+	 */
 	protected abstract void checkInstructions();
 	
 	
-	// Search messages
+	/**
+	 * Search messages in the log
+	 */
 	protected abstract void searchMessages();
 	
 	
-	// Job evaluation
+	/**
+	 * Job evaluation
+	 */
 	protected abstract void evaluate();
 	
 	
-	// Execute actions
+	/**
+	 * Execute actions
+	 */
 	protected abstract void doActions();
 
 	
