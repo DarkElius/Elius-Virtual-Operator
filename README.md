@@ -15,6 +15,8 @@ Task types:
  
  * **SHELL**, used to execute scripts inside a directory set in the evo-shell property file
  
+ * **JOB_SCRIPT**, used to parse script / daemon log in general, search for a message and execute actions
+  
 Requests can be submitted and monitored using http interface.
 
 The software is scalable and can be installed on multiple nodes to better manage high workloads.
