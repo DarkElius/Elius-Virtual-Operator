@@ -52,8 +52,6 @@ public class JobSearch {
 		// Initialize match list
 		if(null == jsMatches)
 			jsMatches = new ArrayList<JobSearchMatch>();
-		else
-			jsMatches.clear();
 		
 		
 		// Get search entries
@@ -76,6 +74,9 @@ public class JobSearch {
 					
 					// Set regular expression used
 					jsm.setRegEx(se);
+					
+					// Set label
+					jsm.setLabel(jobStep.getName());
 
 					// Add match to list
 					jsMatches.add(jsm);
@@ -106,5 +107,13 @@ public class JobSearch {
 		return jsMatches;
 	}
 	
+	
+	/**
+	 * Clear the match list
+	 */
+	public void clear() {
+		if(null != jsMatches)
+			jsMatches.clear();
+	}
 	
 }

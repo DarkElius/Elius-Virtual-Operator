@@ -25,7 +25,9 @@ import org.apache.logging.log4j.Logger;
 import elius.virtualoperator.VirtualOperatorID;
 import elius.virtualoperator.task.debug.DebugProcess;
 import elius.virtualoperator.task.shell.ShellProcess;
+import elius.virtualoperator.task.job.JobProcessBetaSystems;
 import elius.virtualoperator.task.job.JobProcessScript;
+import elius.virtualoperator.task.job.JobType;
 
 public class TaskExecutor implements Runnable {
 
@@ -118,7 +120,45 @@ public class TaskExecutor implements Runnable {
 				task.setStatus(jobProcess.getTaskStatusResult());
 				task.setResult(jobProcess.getProcessResult());
 						
-				break;					
+				break;	
+				
+			case JOB_BETASYSTEMS_OPEN:
+				// Update task status
+				dbTask.updateStatus(task.getUuid(), TaskStatus.RUNNING);
+
+				// Create shell instance
+				JobProcessBetaSystems jobProcessBetaSystemsOpen = new JobProcessBetaSystems(JobType.OPEN);
+
+				// Execute task
+				jobProcessBetaSystemsOpen.execute(task);
+				
+				// Update message
+				dbTask.updateResult(task.getUuid(), jobProcessBetaSystemsOpen.getTaskStatusResult(), jobProcessBetaSystemsOpen.getProcessResult());
+				
+				// Update task info for log
+				task.setStatus(jobProcessBetaSystemsOpen.getTaskStatusResult());
+				task.setResult(jobProcessBetaSystemsOpen.getProcessResult());
+						
+				break;		
+			
+			case JOB_BETASYSTEMS_MAINFRAME:
+				// Update task status
+				dbTask.updateStatus(task.getUuid(), TaskStatus.RUNNING);
+
+				// Create shell instance
+				JobProcessBetaSystems jobProcessBetaSystemsMainframe = new JobProcessBetaSystems(JobType.MAINFRAME);
+
+				// Execute task
+				jobProcessBetaSystemsMainframe.execute(task);
+				
+				// Update message
+				dbTask.updateResult(task.getUuid(), jobProcessBetaSystemsMainframe.getTaskStatusResult(), jobProcessBetaSystemsMainframe.getProcessResult());
+				
+				// Update task info for log
+				task.setStatus(jobProcessBetaSystemsMainframe.getTaskStatusResult());
+				task.setResult(jobProcessBetaSystemsMainframe.getProcessResult());
+						
+				break;		
 			
 			default:
 				// Log error message for missing process

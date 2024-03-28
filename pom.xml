@@ -36,6 +36,9 @@
 		<derby.version>10.16.1.1</derby.version>
 		<jackson.version>2.16.1</jackson.version>
 		<jakarta.version>6.0.0</jakarta.version>
+		<json.version>20240303</json.version>
+		<commons-lang3.version>3.14.0</commons-lang3.version>
+		<commons-text.version>1.11.0</commons-text.version>
 	</properties>
 
 	<dependencies>
@@ -84,6 +87,27 @@
 			<artifactId>jakarta.servlet-api</artifactId>
 			<version>${jakarta.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		
+		<!-- JSON -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${json.version}</version>
+		</dependency>
+		
+		<!-- StringUtils -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
+		</dependency>
+		
+		<!-- Escape HTML -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+		    <version>${commons-text.version}</version>
 		</dependency>
 		
 	</dependencies>

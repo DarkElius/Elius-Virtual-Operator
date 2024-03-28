@@ -28,7 +28,14 @@ public class JobSearchMatch {
 	// Message that match with the search
 	private String message;
 
-	// Get regular Expression
+	// Free label where the message was found
+	private String label;
+	
+	
+	/**
+	 * Get regular expression
+	 * @return Regular expression
+	 */
 	public String getRegEx() {
 		return regEx;
 	}
@@ -58,6 +65,24 @@ public class JobSearchMatch {
 	 */
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+
+	/**
+	 * Get label
+	 * @return Label
+	 */
+	public String getLabel() {
+		return label;
+	}
+
+
+	/**
+	 * Set label
+	 * @param label Label
+	 */
+	public void setLabel(String label) {
+		this.label = label;
 	}
 	
 	

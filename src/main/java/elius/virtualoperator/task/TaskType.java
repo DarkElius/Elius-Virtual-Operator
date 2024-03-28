@@ -24,8 +24,11 @@ public enum TaskType {
 	UNKNOWN(0, "Unknown"), 
 	DEBUG(1, "Debug"), 
 	SHELL(2, "Shell"),
-	JOB_SCRIPT(3, "Job Script");
+	JOB_SCRIPT(3, "Job Script"),
+	JOB_BETASYSTEMS_OPEN(4, "Job BetaSystem Open"),
+	JOB_BETASYSTEMS_MAINFRAME(5, "Job BetaSystem Mainframe");
 
+	
 	// Type name
 	private final String name;
 	// Type id

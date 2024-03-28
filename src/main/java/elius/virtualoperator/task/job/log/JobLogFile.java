@@ -36,10 +36,10 @@ import elius.virtualoperator.task.job.JobAttributes;
 import elius.virtualoperator.task.job.JobStep;
 import elius.webapp.framework.properties.PropertiesManager;
 
-public class JobLogScript extends JobLog {
+public class JobLogFile extends JobLog {
 	
 	// Get logger
-	protected static Logger logger = LogManager.getLogger(JobLogScript.class);	
+	protected static Logger logger = LogManager.getLogger(JobLogFile.class);	
 
 	// Properties file
 	private PropertiesManager appProperties;
@@ -61,37 +61,42 @@ public class JobLogScript extends JobLog {
 	 * Constructor
 	 * @param job Job to fetch
 	 */
-	public JobLogScript(Job job) {
+	public JobLogFile(Job job) {
 		super(job);
 		
 		// Application properties
 		appProperties = new PropertiesManager();
 		
 		// Job step
-		jobStep = new JobStep();;
+		jobStep = new JobStep();
 	}
 
 	
 	/**
 	 * Initialize
+	 * @return 0 OK, otherwise error
 	 */
 	@Override
 	public int initialize() {
 		
+		// Log
+		logger.trace("Initialize job log file");
+		
 		// Load properties
-		appProperties.load(JobAttributes.DEFAULT_JOB_PROPERTIES_FILE);
+		if(0 != appProperties.load(JobAttributes.DEFAULT_JOB_PROPERTIES_FILE))
+			return -1;
 		
 		// Path where find logs
-		path = appProperties.get(JobAttributes.PROP_TASK_JOB_SCRIPT_LOG_PATH, JobAttributes.DEFAULT_TASK_JOB_SCRIPT_LOG_PATH);
+		path = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_FILE_PATH, JobAttributes.DEFAULT_TASK_JOB_LOG_FILE_PATH);
 		
 		// Filename mask
-		mask = appProperties.get(JobAttributes.PROP_TASK_JOB_SCRIPT_LOG_MASK, JobAttributes.DEFAULT_TASK_JOB_SCRIPT_LOG_MASK);
+		mask = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_FILE_MASK, JobAttributes.DEFAULT_TASK_JOB_LOG_FILE_MASK);
 		
 		// Get Log max size to prevent overload
-		maxLogSize = appProperties.getLong(JobAttributes.PROP_TASK_JOB_SCRIPT_LOG_MAXSIZE, JobAttributes.DEFAULT_TASK_JOB_SCRIPT_LOG_MAXSIZE);
+		maxLogSize = appProperties.getLong(JobAttributes.PROP_TASK_JOB_LOG_FILE_MAXSIZE, JobAttributes.DEFAULT_TASK_JOB_LOG_FILE_MAXSIZE);
 		
 		// Log
-		logger.trace("Job Log Script initialized");
+		logger.debug("Job log file initialized");
 		
 		return 0;
 	}
@@ -103,6 +108,9 @@ public class JobLogScript extends JobLog {
 	 */
 	@Override
 	public int fetch() {
+		
+		// Log
+		logger.trace("Fetch job log file");
 			
 		// Check if URL is already defined
 		if((null == job.getUrl()) || "".equalsIgnoreCase(job.getUrl())) {
@@ -180,6 +188,10 @@ public class JobLogScript extends JobLog {
 		}
 
 		
+		// Log
+		logger.debug("Job log file fetched");
+		
+		// Return OK
 		return 0;
 	}
 	
@@ -190,6 +202,10 @@ public class JobLogScript extends JobLog {
 	 * @return Blank in case of errors, otherwise the filename
 	 */
 	public String getLogFilePath() {
+		
+		// Log
+		logger.trace("Get job log file path");
+		
 		
 		// Initialize final path with log mask
 		String filePath = mask;
@@ -253,6 +269,10 @@ public class JobLogScript extends JobLog {
 		// Add log path
 		filePath = path + "/" + filePath;
 				
+		
+		
+		// Log
+		logger.debug("Job log file path(" + filePath + ")");
 		
 		// Return the real job log file path
 		return filePath;

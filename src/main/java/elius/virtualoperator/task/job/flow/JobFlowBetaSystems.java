@@ -22,38 +22,48 @@ package elius.virtualoperator.task.job.flow;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import elius.virtualoperator.task.job.Job;
 import elius.virtualoperator.task.job.JobStep;
+import elius.virtualoperator.task.job.JobType;
+import elius.virtualoperator.task.job.log.JobLogBetaSystems;
 import elius.virtualoperator.task.job.log.JobLogFile;
 import elius.virtualoperator.task.job.search.JobSearch;
 import elius.virtualoperator.task.job.search.JobSearchRepository;
 import elius.virtualoperator.task.job.search.JobSearchRepositoryAttributes;
 
-public class JobFlowScript extends JobFlow {
+public class JobFlowBetaSystems extends JobFlow {
 	
 	// Get logger
-	private static Logger logger = LogManager.getLogger(JobFlowScript.class);
+	private static Logger logger = LogManager.getLogger(JobFlowBetaSystems.class);
 	
-	// Job Step
-	private JobStep jobStep;
+	// Job Steps
+	private List<JobStep> jobSteps;
 	
 	// Job Search match list
 	private JobSearch jobSearch;
+	
+	// Job Type
+	private JobType jobType;
 	
 
 	/**
 	 * Constructor
 	 * @param job Job
 	 */
-	public JobFlowScript(Job job) {
+	public JobFlowBetaSystems(Job job, JobType jobType) {
 		
 		super(job);	
 		
-		// Initialize job step
-		jobStep = null;
+		// Set job type
+		this.jobType = jobType;
+		
+		// Initialize job steps
+		jobSteps = null;
 		
 		// Initialize job search
 		jobSearch = new JobSearch();
@@ -73,16 +83,16 @@ public class JobFlowScript extends JobFlow {
 		logger.trace("Fetch Log");
 		
 		// Set job
-		JobLogFile jls = new JobLogFile(job);
+		JobLogBetaSystems jlbs = new JobLogBetaSystems(job);
 		
 		// Initialize
-		jls.initialize();
+		jlbs.initialize();
 		
 		// Fetch log
-		if(0 == jls.fetch()) {
+		if(0 == jlbs.fetch()) {
 			
 			// Get parsed log
-			jobStep = jls.getJobStep();
+			jobSteps = jlbs.getJobSteps();
 			
 		} else {
 			
@@ -111,12 +121,35 @@ public class JobFlowScript extends JobFlow {
 		// Create repository
 		JobSearchRepository jsRepo = new JobSearchRepository();
 		
-		// Load from repository the search entries for scripts
-		if(0 == jsRepo.load(JobSearchRepositoryAttributes.SEARCH_ENTRIES_JOB_SCRIPT)) {
+		String repo = "";
+		
+		// Select search entries repository for the specified job type: default is open
+		switch(jobType) {
 			
-			// Search for a match
-			jobSearch.search(jobStep, jsRepo);
+			case OPEN:
+				repo = JobSearchRepositoryAttributes.SEARCH_ENTRIES_JOB_SCRIPT;
+				break;
 
+			case MAINFRAME:
+				repo = JobSearchRepositoryAttributes.SEARCH_ENTRIES_JOB_MAINFRAME;
+				break;
+			
+			default:
+				repo = JobSearchRepositoryAttributes.SEARCH_ENTRIES_JOB_SCRIPT;
+				break;
+		}
+		
+		
+		// Load from repository the search entries
+		if(0 == jsRepo.load(repo)) {
+			
+			// Search in every job step
+			for (JobStep jobStep : jobSteps) {
+				
+				// Search for a match
+				jobSearch.search(jobStep, jsRepo);
+				
+			}
 			
 		} else {
 			
