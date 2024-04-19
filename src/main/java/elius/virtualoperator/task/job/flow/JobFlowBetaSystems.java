@@ -31,7 +31,6 @@ import elius.virtualoperator.task.job.Job;
 import elius.virtualoperator.task.job.JobStep;
 import elius.virtualoperator.task.job.JobType;
 import elius.virtualoperator.task.job.log.JobLogBetaSystems;
-import elius.virtualoperator.task.job.log.JobLogFile;
 import elius.virtualoperator.task.job.search.JobSearch;
 import elius.virtualoperator.task.job.search.JobSearchRepository;
 import elius.virtualoperator.task.job.search.JobSearchRepositoryAttributes;
@@ -94,6 +93,9 @@ public class JobFlowBetaSystems extends JobFlow {
 			// Get parsed log
 			jobSteps = jlbs.getJobSteps();
 			
+			// Log
+			logger.debug("Log fetched");
+
 		} else {
 			
 			// Set Flow Error
@@ -101,10 +103,11 @@ public class JobFlowBetaSystems extends JobFlow {
 			
 			// Set Flow Error
 			flowResultMessage = "Unable to fetch log";
+			
+			// Stop the flow
+			goNextStep = false;
 		}
 		
-		// Log
-		logger.debug("Log fetched");
 	}
 	
 

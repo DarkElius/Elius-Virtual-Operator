@@ -21,6 +21,10 @@
 package elius.virtualoperator.task.job.log;
 
 import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -28,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import elius.virtualoperator.task.job.Job;
@@ -99,10 +104,10 @@ public class JobLogBetaSystems extends JobLog {
 			return -1;
 		
 		// Base URI
-		baseUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_URI);
+		baseUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI);
 		
 		// Select URI
-		selectUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI);
+		selectUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_URI);
 		
 		// UserId
 		httpCredentials.setUserId(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_USERID));
@@ -144,16 +149,21 @@ public class JobLogBetaSystems extends JobLog {
 							job.getRc() + "." +
 							job.getStarted() + "." +
 							job.getEnded());
+			// Return error
+			return 1;
 		}
 		
 		// Get Steps
-		if(0 == getJobStepsInfo(jobUri)) {
+		if(0 != getJobStepsInfo(jobUri)) {
 			logger.error("Error getting step info for " + 
 					job.getName() + "." + 
 					job.getId() + "." +
 					job.getRc() + "." +
 					job.getStarted() + "." +
-					job.getEnded());		
+					job.getEnded());
+			
+			// Return error
+			return 2;
 		}
 		
 		// Log
@@ -184,9 +194,36 @@ public class JobLogBetaSystems extends JobLog {
 		
 		// Initialize job URI
 		String jobUri = "";	
+
+		// Convert timestamps
+		String dateFrom = new SimpleDateFormat("yyyy-MM-dd").format(job.getStarted());
+		String timeFrom = new SimpleDateFormat("HH:mm:ss").format(job.getStarted());
+		String dateTo = new SimpleDateFormat("yyyy-MM-dd").format(job.getEnded());
+		String timeTo = new SimpleDateFormat("HH:mm:ss").format(job.getEnded());
 		
 		// Prepare URI
-		String uri = selectUri + "?p:jobname=" + job.getName() + "&p:jobid=" + job.getId() + "&p:fromdate=" + job.getStarted() + "&p:todate=" + job.getEnded() + "&format=json";
+		String uri = selectUri;
+		
+		try {
+		    uri += "?p:mode=save"
+				+ "&p:fromdate=" + URLEncoder.encode(dateFrom, StandardCharsets.UTF_8.name())
+				+ "&p:fromtime=" + URLEncoder.encode(timeFrom, StandardCharsets.UTF_8.name())
+				+ "&p:todate=" + URLEncoder.encode(dateTo, StandardCharsets.UTF_8.name())
+				+ "&p:totime=" + URLEncoder.encode(timeTo, StandardCharsets.UTF_8.name())
+				+ "&p:jobname=" + URLEncoder.encode(job.getName(), StandardCharsets.UTF_8.name())
+				+ "&p:jobid=" + URLEncoder.encode(job.getId(), StandardCharsets.UTF_8.name())
+				+ "&p:joberrt="
+				+ "&p:jobqueue=ALL"
+				+ "&p:jobnetid="
+				+ "&p:ljobname="
+				+ "&p:hostname="
+				+ "&format=json";
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Errror encoding jobName(" + job.getName() + ") jobId(" + job.getId() + ") for http call");
+		    logger.error(e.getMessage());
+		    return "";
+		}
+
 		
 		// Get job info
 		// TODO move ignore cert on properties
@@ -196,23 +233,30 @@ public class JobLogBetaSystems extends JobLog {
 		// Parse JSON from text to object
 		JSONObject jo = new JSONObject(httpConnection.getResponseContent());
 		
-		// Get the item with the job info	
-		JSONObject a4dp = jo.getJSONObject("a4dp:return").getJSONObject("RESULT_TABLE").getJSONObject("a4dp:row");
 		
-		// Get job details
-		JSONArray ja = a4dp.getJSONArray("a4dp:col");
+		try {
 		
-		// Read details
-		for (int i = 0; i < ja.length(); i++) {
+			// Get the item with the job info	
+			JSONObject a4dp = jo.getJSONObject("a4dp:return").getJSONObject("RESULT_TABLE").getJSONObject("a4dp:row");
 			
-			// Get URI if exist
-			if("URI".equals(ja.getJSONObject(i).get("name"))) {
-				
-				// Set final URI
-				jobUri = baseUri + ja.getJSONObject(i).get("content").toString() + "&format=json";
-				
-			}
+			// Get job details
+			JSONArray ja = a4dp.getJSONArray("a4dp:col");
 			
+			// Read details
+			for (int i = 0; i < ja.length(); i++) {
+				
+				// Get URI if exist
+				if("URI".equals(ja.getJSONObject(i).get("name"))) {
+					
+					// Set final URI
+					jobUri = baseUri + ja.getJSONObject(i).get("content").toString() + "&format=json";
+					
+				}
+				
+			}	
+		} catch (JSONException e) {
+			// Return error 
+			return "";
 		}
 
 		// Return job URI
