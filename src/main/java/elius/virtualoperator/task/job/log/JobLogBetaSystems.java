@@ -27,8 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import org.apache.commons.text.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -37,7 +35,6 @@ import org.json.JSONObject;
 
 import elius.virtualoperator.task.job.Job;
 import elius.virtualoperator.task.job.JobAttributes;
-
 import elius.virtualoperator.task.job.JobStep;
 import elius.webapp.framework.properties.PropertiesManager;
 import elius.webapp.framework.security.secret.SecretCredentials;
@@ -66,6 +63,9 @@ public class JobLogBetaSystems extends JobLog {
 	
 	// HTTP Credentials
 	private SecretCredentials httpCredentials;
+	
+	// Step lines
+	List<String> jobLogList;
 	
 	
 	/**
@@ -197,9 +197,9 @@ public class JobLogBetaSystems extends JobLog {
 
 		// Convert timestamps
 		String dateFrom = new SimpleDateFormat("yyyy-MM-dd").format(job.getStarted());
-		String timeFrom = new SimpleDateFormat("HH:mm:ss").format(job.getStarted());
+		//String timeFrom = new SimpleDateFormat("HH:mm:ss").format(job.getStarted());
 		String dateTo = new SimpleDateFormat("yyyy-MM-dd").format(job.getEnded());
-		String timeTo = new SimpleDateFormat("HH:mm:ss").format(job.getEnded());
+		//String timeTo = new SimpleDateFormat("HH:mm:ss").format(job.getEnded());
 		
 		// Prepare URI
 		String uri = selectUri;
@@ -207,9 +207,11 @@ public class JobLogBetaSystems extends JobLog {
 		try {
 		    uri += "?p:mode=save"
 				+ "&p:fromdate=" + URLEncoder.encode(dateFrom, StandardCharsets.UTF_8.name())
-				+ "&p:fromtime=" + URLEncoder.encode(timeFrom, StandardCharsets.UTF_8.name())
+//				+ "&p:fromtime=" + URLEncoder.encode(timeFrom, StandardCharsets.UTF_8.name())
+				+ "&p:fromtime="
 				+ "&p:todate=" + URLEncoder.encode(dateTo, StandardCharsets.UTF_8.name())
-				+ "&p:totime=" + URLEncoder.encode(timeTo, StandardCharsets.UTF_8.name())
+//				+ "&p:totime=" + URLEncoder.encode(timeTo, StandardCharsets.UTF_8.name())
+				+ "&p:totime="
 				+ "&p:jobname=" + URLEncoder.encode(job.getName(), StandardCharsets.UTF_8.name())
 				+ "&p:jobid=" + URLEncoder.encode(job.getId(), StandardCharsets.UTF_8.name())
 				+ "&p:joberrt="
@@ -276,67 +278,162 @@ public class JobLogBetaSystems extends JobLog {
 		if(0 != httpConnection.get(jobUri, httpCredentials, true))
 			return 1;
 		
-		// Parse JSON from text to object
-		JSONObject jo = new JSONObject(httpConnection.getResponseContent());
-		// Get the item with the steps info
-		JSONObject a4dp = jo.getJSONObject("a4dp:return").getJSONObject("JOB_LOGTYPES");
-		// Get steps
-		JSONArray ja = a4dp.getJSONArray("a4dp:row");
-		
-		// Read steps
-		for (int i = 0; i < ja.length(); i++) {
-			// JSON Steps array info
-			JSONArray steps = ja.getJSONObject(i).getJSONArray("a4dp:col");
-			// Job Step item
-			JobStep js = new JobStep();
-			// Temporary variable for StepName creation
-			String stepName = "";
-			// Read all step info
-			for (int s = 0; s < steps.length(); s++) {
-				// Get step info if is present
-				if("URI".equals(steps.getJSONObject(s).get("name"))) {
-					// Set step URI
-					js.setUrl(baseUri + steps.getJSONObject(s).get("content").toString() + "&format=std");
-					
-					// Get step info
-					if(0 == httpConnection.get(js.getUrl(), httpCredentials, true)) {
-						// Get output
-						String jobLog = httpConnection.getResponseContent();
-						// Remove header and footer
-						jobLog = StringUtils.substringBetween(jobLog, "<div id=\"output\">", "</div>");
-						// Unescpae HTML
-						jobLog = StringEscapeUtils.unescapeHtml4(jobLog);
-						// Output is defined in a single row
-						List<String> jobLogList = new ArrayList<String>();
-						// Add single row to the list
-						jobLogList.add(jobLog);
-						// Set step log
-						js.setLog(jobLogList);	
-					} else {
-						// Warning
-						logger.warn("Unable to get step info from URI (" + js.getUrl() + ")");
-					}
-				}
-				
-				// Get step-name if it's present
-				if("STEPNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
-					stepName += steps.getJSONObject(s).get("content").toString();
-				}
-				// Get proc-step if it's present
-				if("PROCSTEP".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
-					stepName += "." + steps.getJSONObject(s).get("content").toString();
-				}
-
-			}
-			// Set complete step-name
-			js.setName(stepName);
+		try {
+			// Parse JSON from text to object
+			JSONObject jo = new JSONObject(httpConnection.getResponseContent());
+			// Get the item with the steps info
+			JSONObject a4dp = jo.getJSONObject("a4dp:return").getJSONObject("JOB_LOGTYPES");
+			// Get steps
+			JSONArray ja = a4dp.getJSONArray("a4dp:row");
 			
-			// Add step info to list
-			jobSteps.add(js);
+			// Read steps
+			for (int i = 0; i < ja.length(); i++) {
+				// JSON Steps array info
+				JSONArray steps = ja.getJSONObject(i).getJSONArray("a4dp:col");
+				// Job Step item
+				JobStep js = new JobStep();
+				// Temporary variable for StepName creation
+				String stepName = "";
+				
+				// Read all step info
+				for (int s = 0; s < steps.length(); s++) {
+					// Get step info if is present
+					if("URI".equals(steps.getJSONObject(s).get("name"))) {
+						// Set step URI
+						js.setUrl(baseUri + steps.getJSONObject(s).get("content").toString() + "&format=json");
+						
+						// Get step info
+						if(0 == httpConnection.get(js.getUrl(), httpCredentials, true)) {
+							
+							// Output is defined in a single row
+							jobLogList = new ArrayList<String>();
+							
+							// Parse JSON from text to object
+							JSONObject joStep = new JSONObject(httpConnection.getResponseContent());
+							
+							// JSON get pages
+							Object oPages = joStep.getJSONObject("a4dp:return").getJSONObject("RESULT_TABLE").get("a4dp:page");
+							
+							// Parse pages
+							parsePages(oPages);
+							
+							// Set step log
+							js.setLog(jobLogList);	
+						} else {
+							// Warning
+							logger.warn("Unable to get step info from URI (" + js.getUrl() + ")");
+						}
+					}
+					
+					// Get step-name if it's present
+					if("STEPNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
+						if(!"".equals(stepName))
+							stepName += ".";
+						stepName += steps.getJSONObject(s).get("content").toString();
+					}
+					// Get proc-step if it's present
+					if("PROCSTEP".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
+						if(!"".equals(stepName))
+							stepName += ".";
+						stepName += steps.getJSONObject(s).get("content").toString();
+					}
+					// Get ddname if it's present
+					if("DDNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
+						if(!"".equals(stepName))
+							stepName += ".";
+						stepName += steps.getJSONObject(s).get("content").toString();
+					}
+	
+				}
+				// Set complete step-name
+				js.setName(stepName);
+				
+				// Add step info to list
+				jobSteps.add(js);
+			}
+		} catch (JSONException e) {
+			// Return error 
+			return 1;
 		}
 
 		// Return step list
 		return 0;
 	}
 
+	
+	/**
+	 * Parse pages from a4dp JSON Object
+	 * @param oPages Pages object
+	 * @throws JSONException
+	 */
+	private void parsePages(Object oPages) throws JSONException {
+		
+		// Single page or multiple pages
+		if(oPages instanceof JSONObject) {
+			
+			// Convert JSON object
+			JSONObject page = (JSONObject)oPages;
+
+			// Child check
+			if(page.has("a4dp:line")) {
+				// JSON get lines
+				Object oLines = page.get("a4dp:line");
+				
+				// Parse lines
+				parseLines(oLines);				
+			}
+			
+			
+		} else if(oPages instanceof JSONArray) {
+			
+			// Convert object to Array
+			JSONArray pages = (JSONArray)oPages;
+			
+			// Read pages
+			for (int p = 0; p < pages.length(); p++) {
+				
+				// Child check
+				if(pages.getJSONObject(p).has("a4dp:line")) {
+					// JSON get lines
+					Object oLines = pages.getJSONObject(p).get("a4dp:line");
+					
+					// Parse lines
+					parseLines(oLines);
+				}				
+			}
+			
+		}
+	}
+	
+	
+	/**
+	 * Parse lines from a4dp JSON object
+	 * @param oLines Lines object
+	 * @throws JSONException
+	 */
+	private void parseLines(Object oLines)  throws JSONException {
+		
+		// Single page or multiple lines
+		if(oLines instanceof JSONObject) {
+
+			// Convert JSON object
+			JSONObject line = (JSONObject)oLines;			
+
+			if(line.has("content"))
+				jobLogList.add(line.get("content").toString());
+			
+		} else if(oLines instanceof JSONArray) {
+			
+			// Convert object to Array
+			JSONArray lines = (JSONArray)oLines;
+			
+			// Read lines
+			for (int l = 0; l < lines.length(); l++) {
+				// Blank lines are note saved
+				if(lines.getJSONObject(l).has("content"))
+					jobLogList.add(lines.getJSONObject(l).get("content").toString());
+			}
+		}
+
+	}
 }

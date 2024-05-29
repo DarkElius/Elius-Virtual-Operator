@@ -56,7 +56,6 @@ public class TaskInterface extends Application {
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response add(Task task) {
 		
 		// Log request received

@@ -22,6 +22,8 @@ package elius.virtualoperator.task.job.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,10 +65,17 @@ public class JobSearch {
 			// Read log looking for a match
 			for (String line : jobStep.getLog()) {
 				
-				// Match found
-				if(line.matches(se)) {
-					
-					// Initialize match element
+				// Compile pattern
+		        Pattern pattern = Pattern.compile(se, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+
+		        // Prepare matcher
+		        Matcher matcher = pattern.matcher(line);
+
+		        // Match found
+		        while (matcher.find())
+		        {
+
+		        	// Initialize match element
 					JobSearchMatch jsm = new JobSearchMatch();
 					
 					// Set message where match is present
