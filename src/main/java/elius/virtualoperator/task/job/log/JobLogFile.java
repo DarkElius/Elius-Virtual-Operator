@@ -35,6 +35,7 @@ import elius.virtualoperator.task.job.Job;
 import elius.virtualoperator.task.job.JobAttributes;
 import elius.virtualoperator.task.job.JobStep;
 import elius.webapp.framework.properties.PropertiesManager;
+import elius.webapp.framework.properties.PropertiesManagerFactory;
 
 public class JobLogFile extends JobLog {
 	
@@ -65,7 +66,7 @@ public class JobLogFile extends JobLog {
 		super(job);
 		
 		// Application properties
-		appProperties = new PropertiesManager();
+		appProperties = PropertiesManagerFactory.getInstance(JobAttributes.DEFAULT_JOB_PROPERTIES_FILE);
 		
 		// Job step
 		jobStep = new JobStep();
@@ -82,8 +83,8 @@ public class JobLogFile extends JobLog {
 		// Log
 		logger.trace("Initialize job log file");
 		
-		// Load properties
-		if(0 != appProperties.load(JobAttributes.DEFAULT_JOB_PROPERTIES_FILE))
+		// Verify that properties are loaded
+		if(!appProperties.isLoaded())
 			return -1;
 		
 		// Path where find logs

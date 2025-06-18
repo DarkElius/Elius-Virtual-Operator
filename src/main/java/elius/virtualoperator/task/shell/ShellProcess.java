@@ -27,9 +27,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import elius.webapp.framework.properties.PropertiesManager;
+import elius.webapp.framework.properties.PropertiesManagerFactory;
 import elius.virtualoperator.task.Task;
 import elius.virtualoperator.task.TaskProcess;
 import elius.virtualoperator.task.TaskStatus;
+
 
 public class ShellProcess implements TaskProcess {
 	
@@ -49,10 +51,10 @@ public class ShellProcess implements TaskProcess {
 	@Override
 	public void execute(Task task) {
 		// Application properties
-		appProperties = new PropertiesManager();
+		appProperties = PropertiesManagerFactory.getInstance(ShellAttributes.DEFAULT_SHELL_PROPERTIES_FILE);
 		
 		// Load shell properties
-		if(0 != appProperties.load(ShellAttributes.DEFAULT_SHELL_PROPERTIES_FILE)) {
+		if(appProperties.isLoaded()) {
 			// Set error
 			tStatus = TaskStatus.ERROR;
 			// Set error message

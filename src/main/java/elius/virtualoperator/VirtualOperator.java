@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import elius.virtualoperator.db.DBTables;
 import elius.virtualoperator.task.TaskSubmitter;
 import elius.webapp.framework.properties.PropertiesManager;
+import elius.webapp.framework.properties.PropertiesManagerFactory;
 
 public class VirtualOperator {
 	
@@ -57,10 +58,7 @@ public class VirtualOperator {
 		logger.debug("Operator service initialization");
 		
 		// Application properties
-		appProperties = new PropertiesManager();
-		
-		// Load default properties
-		appProperties.load(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
+		appProperties = PropertiesManagerFactory.getInstance(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
 		
 		// Initialize database (drop/create) if required
 		if("Y".equalsIgnoreCase(appProperties.get(VirtualOperatorAttributes.PROP_DATABASE_INIT_ON_BOOT))) {

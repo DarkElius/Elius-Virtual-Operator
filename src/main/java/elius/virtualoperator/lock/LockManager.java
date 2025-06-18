@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import elius.virtualoperator.VirtualOperatorAttributes;
 import elius.virtualoperator.VirtualOperatorID;
 import elius.webapp.framework.properties.PropertiesManager;
+import elius.webapp.framework.properties.PropertiesManagerFactory;
 
 public class LockManager {
 
@@ -64,7 +65,7 @@ public class LockManager {
 		dbLock = new LockDatabase();
 		
 		// Application properties
-		appProperties = new PropertiesManager();
+		appProperties = PropertiesManagerFactory.getInstance(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
 		
 		// Lock
 		lock = new Lock();
@@ -80,9 +81,6 @@ public class LockManager {
 	public void initialization() {
 		// Log start initialization
 		logger.info("Initialize Lock Manager");
-		
-		// Load properties
-		appProperties.load(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
 		
 		// Get application name
 		application = appProperties.get(VirtualOperatorAttributes.PROP_LOCK_MANAGER_APPLICATION, VirtualOperatorAttributes.DEFAULT_LOCK_MANAGER_APPLICATION);

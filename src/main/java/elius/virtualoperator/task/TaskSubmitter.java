@@ -32,6 +32,7 @@ import elius.virtualoperator.VirtualOperatorAttributes;
 import elius.virtualoperator.VirtualOperatorID;
 import elius.virtualoperator.lock.LockManager;
 import elius.webapp.framework.properties.PropertiesManager;
+import elius.webapp.framework.properties.PropertiesManagerFactory;
 
 public class TaskSubmitter implements Runnable {
 
@@ -74,9 +75,7 @@ public class TaskSubmitter implements Runnable {
 		dbTask = new TaskDatabase();
 		
 		// Application properties
-		appProperties = new PropertiesManager();
-		// Load default properties
-		appProperties.load(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
+		appProperties = PropertiesManagerFactory.getInstance(VirtualOperatorAttributes.EVO_PROPERTIES_FILE);
 		
 		// Create lock manager
 		lockManager = new LockManager();
