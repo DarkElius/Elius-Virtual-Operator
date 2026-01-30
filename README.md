@@ -72,11 +72,18 @@ There are two parameters that muset be set at jvm level:
 
 
 
-**Database connection configuration**
+**Database connection configuration - H2 (example only)**
 
-This an example of the jdni resource configuration for a in memory database using Apache Derby.
+H2 is used only as an example embedded database for development and testing.
+It is **not required at runtime** and is marked as `provided` in the Maven configuration.
 
-*<Resource driverClassName="org.apache.derby.iapi.jdbc.AutoloadedDriver"*
+To use H2 with Tomcat:
+
+1. Download H2 from the official website
+2. Copy `h2*.jar` into `$TOMCAT_HOME/lib`
+3. Configure the JNDI DataSource as shown below
+
+*<Resource driverClassName="org.h2.Driver"*
 
  *maxIdle="2" maxTotal="10" maxWaitMillis="5"*
   
@@ -84,7 +91,7 @@ This an example of the jdni resource configuration for a in memory database usin
   
  *type="javax.sql.DataSource"*
   
- *url="jdbc:derby:memory:evodb;create=true"*
+ *url="jdbc:h2:mem:evodb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"*
   
  *username="" password=""*
 
