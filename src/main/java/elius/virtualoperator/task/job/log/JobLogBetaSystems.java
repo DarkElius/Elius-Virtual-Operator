@@ -56,14 +56,20 @@ public class JobLogBetaSystems extends JobLog {
 	// Base URI
 	private String baseUri;
 	
-	// Select URI
-	private String selectUri;
+	// Trust certificate
+	private boolean trustAll;
+	
+	// Select Path
+	private String selectPath;
 	
 	// HTTP Connection 
 	private HttpConnection httpConnection;
 	
 	// HTTP Credentials
 	private SecretCredentials httpCredentials;
+	
+	// Fetch all
+	private String fetchAll;
 	
 	// Step lines
 	List<String> jobLogList;
@@ -107,14 +113,21 @@ public class JobLogBetaSystems extends JobLog {
 		// Base URI
 		baseUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI);
 		
-		// Select URI
-		selectUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_URI);
+		// Trust certificate
+		trustAll = ("Y".equalsIgnoreCase(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST))) ? true : false;
+		
+		// Select Path
+		selectPath = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_PATH);
 		
 		// UserId
 		httpCredentials.setUserId(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_USERID));
 		
 		// Password
 		httpCredentials.setPassword(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_PASSWORD));
+		
+		// Global Fetch
+		fetchAll = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_GLOBAL_FETCH, JobAttributes.DEFAULT_TASK_JOB_LOG_BETASYSTEMS_GLOBAL_FETCH);
+		
 		
 		
 		// Log
@@ -203,7 +216,7 @@ public class JobLogBetaSystems extends JobLog {
 		//String timeTo = new SimpleDateFormat("HH:mm:ss").format(job.getEnded());
 		
 		// Prepare URI
-		String uri = selectUri;
+		String uri = baseUri + selectPath;
 		
 		try {
 		    uri += "?p:mode=save"
@@ -229,8 +242,7 @@ public class JobLogBetaSystems extends JobLog {
 
 		
 		// Get job info
-		// TODO move ignore cert on properties
-		if(0 != httpConnection.get(uri, httpCredentials, true))
+		if(0 != httpConnection.get(uri, httpCredentials, trustAll))
 			return jobUri;
 		
 		// Parse JSON from text to object
@@ -276,7 +288,7 @@ public class JobLogBetaSystems extends JobLog {
 	
 		
 		// Get job info
-		if(0 != httpConnection.get(jobUri, httpCredentials, true))
+		if(0 != httpConnection.get(jobUri, httpCredentials, trustAll))
 			return 1;
 		
 		try {
@@ -295,64 +307,83 @@ public class JobLogBetaSystems extends JobLog {
 				JobStep js = new JobStep();
 				// Temporary variable for StepName creation
 				String stepName = "";
+				String jlistkey = "";
+				String procstep = "";
+				String ddname = "";
+				String uri = "";
+				boolean fetchStep = false;
 				
 				// Read all step info
 				for (int s = 0; s < steps.length(); s++) {
-					// Get step info if is present
-					if("URI".equals(steps.getJSONObject(s).get("name"))) {
-						// Set step URI
-						js.setUrl(baseUri + steps.getJSONObject(s).get("content").toString() + "&format=json");
-						
-						// Get step info
-						if(0 == httpConnection.get(js.getUrl(), httpCredentials, true)) {
-							
-							// Output is defined in a single row
-							jobLogList = new ArrayList<String>();
-							
-							// Parse JSON from text to object
-							JSONObject joStep = new JSONObject(httpConnection.getResponseContent());
-							
-							// JSON get pages
-							Object oPages = joStep.getJSONObject("a4dp:return").getJSONObject("RESULT_TABLE").get("a4dp:page");
-							
-							// Parse pages
-							parsePages(oPages);
-							
-							// Set step log
-							js.setLog(jobLogList);	
-						} else {
-							// Warning
-							logger.warn("Unable to get step info from URI (" + js.getUrl() + ")");
-						}
-					}
+		
+					if("JLISTKEY".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content")))
+						jlistkey = steps.getJSONObject(s).get("content").toString();
+					if("STEPNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content")))
+						stepName = steps.getJSONObject(s).get("content").toString();
+					if("PROCSTEP".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content")))						
+						procstep = steps.getJSONObject(s).get("content").toString();
+					if("DDNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content")))
+						ddname = steps.getJSONObject(s).get("content").toString();
+					if("URI".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content")))
+						uri = steps.getJSONObject(s).get("content").toString();
 					
-					// Get step-name if it's present
-					if("STEPNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
-						if(!"".equals(stepName))
-							stepName += ".";
-						stepName += steps.getJSONObject(s).get("content").toString();
-					}
-					// Get proc-step if it's present
-					if("PROCSTEP".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
-						if(!"".equals(stepName))
-							stepName += ".";
-						stepName += steps.getJSONObject(s).get("content").toString();
-					}
-					// Get ddname if it's present
-					if("DDNAME".equals(steps.getJSONObject(s).get("name")) & (steps.getJSONObject(s).has("content"))) {
-						if(!"".equals(stepName))
-							stepName += ".";
-						stepName += steps.getJSONObject(s).get("content").toString();
-					}
-	
 				}
-				// Set complete step-name
-				js.setName(stepName);
 				
-				// Add step info to list
-				jobSteps.add(js);
+				// Select steps to fetch
+				if(("Y".equalsIgnoreCase(fetchAll)) && ("ALL".equals(jlistkey)))
+					fetchStep = true;
+				else if((!"Y".equalsIgnoreCase(fetchAll)) && (!"ALL".equals(jlistkey)))
+					fetchStep = true;
+				
+				if(fetchStep) {
+					// Set step URI
+					js.setUrl(baseUri + uri + "&format=json");
+					
+					// Get step info
+					if(0 == httpConnection.get(js.getUrl(), httpCredentials, trustAll)) {
+						
+						// Output is defined in a single row
+						jobLogList = new ArrayList<String>();
+						
+						// Parse JSON from text to object
+						JSONObject joStep = new JSONObject(httpConnection.getResponseContent());
+						
+						// JSON get pages
+						Object oPages = joStep.getJSONObject("a4dp:return").getJSONObject("RESULT_TABLE").get("a4dp:page");
+						
+						// Parse pages
+						parsePages(oPages);
+						
+						// Set step log
+						js.setLog(jobLogList);	
+						
+						if("Y".equalsIgnoreCase(fetchAll)) {
+							stepName = "ALL";
+						} else {
+							// Set complete step name
+							if(!"".equals(stepName))
+								stepName += ".";
+							stepName += procstep;
+							if(!"".equals(stepName))
+								stepName += ".";
+							stepName += ddname;
+						}
+						
+						// Set complete step-name
+						js.setName(stepName);
+						
+						// Add step info to list
+						jobSteps.add(js);						
+						
+					} else {
+						// Warning
+						logger.warn("Unable to get step info from URI (" + js.getUrl() + ")");
+					}
+				}
+					
 			}
 		} catch (JSONException e) {
+			logger.error(e);
 			// Return error 
 			return 1;
 		}
