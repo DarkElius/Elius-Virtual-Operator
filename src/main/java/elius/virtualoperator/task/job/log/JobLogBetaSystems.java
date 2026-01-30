@@ -114,7 +114,7 @@ public class JobLogBetaSystems extends JobLog {
 		baseUri = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI);
 		
 		// Trust certificate
-		trustAll = ("Y".equalsIgnoreCase(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST))) ? true : false;
+		trustAll = ("Y".equalsIgnoreCase(appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST, JobAttributes.DEFAULT_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST))) ? true : false;
 		
 		// Select Path
 		selectPath = appProperties.get(JobAttributes.PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_PATH);
