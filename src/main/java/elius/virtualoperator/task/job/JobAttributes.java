@@ -33,6 +33,12 @@ public class JobAttributes {
 	
 	// Default -  Job script, log max size (bytes): used to prevent overloading when file is too big
 	public static final long DEFAULT_TASK_JOB_LOG_FILE_MAXSIZE = 50000000;
+
+	// Default - Job Log BetaSystems, base URI trust (ignore certificate)
+	public static final String DEFAULT_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST = "N";
+	
+	// Default - BetaSystems fetch log with single call
+	public static final String DEFAULT_TASK_JOB_LOG_BETASYSTEMS_GLOBAL_FETCH = "task.job.log.betasystems.globalFetch";
 	
 	
 	// Properties - Job script, path where find logs
@@ -49,12 +55,18 @@ public class JobAttributes {
 	// Properties - Base URI service
 	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI = "task.job.log.betasystems.base.uri";
 	
-	// Properties - URI to select job
-	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_URI = "task.job.log.betasystems.select.uri";
+	// Properties - Job Log BetaSystems, base URI trust (ignore certificate)
+	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_BASE_URI_TRUST = "task.job.log.betasystems.base.uri.trust";
+	
+	// Properties - job select path
+	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_SELECT_PATH = "task.job.log.betasystems.select.path";
 	
 	// Properties - BetaSystems userId
 	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_USERID = "task.job.log.betasystems.userId";
 
 	// Properties - BetaSystems password
 	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_PASSWORD = "task.job.log.betasystems.password";
+	
+	// Properties - BetaSystems fetch log with single call
+	public static final String PROP_TASK_JOB_LOG_BETASYSTEMS_GLOBAL_FETCH = "task.job.log.betasystems.globalFetch";
 }
