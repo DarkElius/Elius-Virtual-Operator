@@ -33,7 +33,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ewaf.version>0.0.1-SNAPSHOT</ewaf.version>
 		<log4j.version>2.18.0</log4j.version>
-		<derby.version>10.16.1.1</derby.version>
+		<h2.version>2.2.224</h2.version>
 		<jackson.version>2.16.1</jackson.version>
 		<jakarta.version>6.0.0</jakarta.version>
 		<json.version>20240303</json.version>
@@ -50,7 +50,6 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -63,16 +62,14 @@
 			<version>${log4j.version}</version>
 		</dependency>
 		
-
-		<!-- Apache Derby DB -->
+		<!-- H2 DB -->
 		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>${derby.version}</version>
-			<scope>runtime</scope>
+		    <groupId>com.h2database</groupId>
+		    <artifactId>h2</artifactId>
+		    <version>${h2.version}</version>
+		    <scope>provided</scope>
 		</dependency>
 		
-
 		<!-- Json to java object -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -80,7 +77,6 @@
 		    <version>${jackson.version}</version>
 		</dependency>
 	
-
 		<!-- Jakarta Servlet Http, only for compilation -->		
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
